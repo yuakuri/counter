@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ゆあクリ！ プレイサポートツール</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-container">
+        <!-- Player Area -->
+        <div id="player-area" class="player-panel active-panel">
+            <div class="panel-header">先攻</div>
+            <div class="resource-grid">
+                <div class="resource-item">
+                    <label>HP</label>
+                    <div class="counter-control vertical">
+                        <button id="player-hp-incr" class="button-small">▲</button>
+                        <span id="player-hp">20</span>
+                        <button id="player-hp-decr" class="button-small">▼</button>
+                    </div>
+                </div>
+                <div class="resource-item">
+                    <label>COST</label>
+                    <div class="counter-control vertical">
+                        <button id="player-cost-incr" class="button-small">▲</button>
+                        <span id="player-cost-display">1/1</span>
+                        <button id="player-cost-decr" class="button-small">▼</button>
+                    </div>
+                </div>
+                <div class="resource-item">
+                    <label>CHARGE</label>
+                    <div class="counter-control vertical">
+                        <button id="player-charge-incr" class="button-small">▲</button>
+                        <span id="player-charge">0</span>
+                        <button id="player-charge-decr" class="button-small">▼</button>
+                    </div>
+                </div>
+            </div>
+            <div class="flags-grid">
+                <div class="skill-buttons">
+                    <button id="player-ultimate" class="button-ultimate">奥義</button>
+                    <button id="player-skill" class="button-skill">リーダー<br>スキル</button>
+                </div>
+                <div id="player-zero-cost" class="zero-cost-flag">
+                    <span>0コスト使用</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opponent Area -->
+        <div id="opponent-area" class="player-panel">
+            <div class="panel-header">後攻</div>
+            <div class="resource-grid">
+                <div class="resource-item">
+                    <label>HP</label>
+                    <div class="counter-control vertical">
+                        <button id="opponent-hp-incr" class="button-small">▲</button>
+                        <span id="opponent-hp">20</span>
+                        <button id="opponent-hp-decr" class="button-small">▼</button>
+                    </div>
+                </div>
+                <div class="resource-item">
+                    <label>COST</label>
+                    <div class="counter-control vertical">
+                        <button id="opponent-cost-incr" class="button-small">▲</button>
+                        <span id="opponent-cost-display">0/0</span>
+                        <button id="opponent-cost-decr" class="button-small">▼</button>
+                    </div>
+                </div>
+                <div class="resource-item">
+                    <label>CHARGE</label>
+                    <div class="counter-control vertical">
+                        <button id="opponent-charge-incr" class="button-small">▲</button>
+                        <span id="opponent-charge">0</span>
+                        <button id="opponent-charge-decr" class="button-small">▼</button>
+                    </div>
+                </div>
+            </div>
+            <div class="flags-grid">
+                <div class="skill-buttons">
+                    <button id="opponent-ultimate" class="button-ultimate">奥義</button>
+                    <button id="opponent-skill" class="button-skill">リーダー<br>スキル</button>
+                </div>
+                <div id="opponent-zero-cost" class="zero-cost-flag">
+                    <span>0コスト使用</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-controls">
+        <button id="show-log" class="button">ログ</button>
+        <button id="next-turn" class="button button-warning button-large">ターン終了</button>
+        <button id="reset-game" class="button">リセット</button>
+    </footer>
+
+    <!-- Log Modal -->
+    <div id="log-modal" class="log-modal">
+        <div class="log-modal-content">
+            <h2>ログ</h2>
+            <div id="log-area"></div>
+            <button id="close-log" class="button">閉じる</button>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
