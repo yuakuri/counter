@@ -13,8 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
         player: {
             panel: document.getElementById('player-area'),
             hp: document.getElementById('player-hp'),
-            costDisplay: document.getElementById('player-cost-display'),
-            charge: document.getElementById('player-charge'),
+            costStars: document.getElementById('player-cost-stars'),
+            chargeStars: document.getElementById('player-charge-stars'),
             ultimateBtn: document.getElementById('player-ultimate'),
             skillBtn: document.getElementById('player-skill'),
             zeroCostFlag: document.getElementById('player-zero-cost'),
@@ -22,8 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
         opponent: {
             panel: document.getElementById('opponent-area'),
             hp: document.getElementById('opponent-hp'),
-            costDisplay: document.getElementById('opponent-cost-display'),
-            charge: document.getElementById('opponent-charge'),
+            costStars: document.getElementById('opponent-cost-stars'),
+            chargeStars: document.getElementById('opponent-charge-stars'),
             ultimateBtn: document.getElementById('opponent-ultimate'),
             skillBtn: document.getElementById('opponent-skill'),
             zeroCostFlag: document.getElementById('opponent-zero-cost'),
@@ -52,15 +52,36 @@ document.addEventListener("DOMContentLoaded", () => {
         dom.notificationContainer.appendChild(notification);
         setTimeout(() => {
             notification.remove();
-        }, 3000); // Matches animation duration
+        }, 3000);
     };
 
     // --- UI Update Function ---
+    const renderStars = (container, current, max, isCharge = false) => {
+        container.innerHTML = '';
+        const limit = isCharge ? current : max;
+
+        for (let i = 0; i < limit; i++) {
+            let colorClass = '';
+            // For both cost and charge, apply color based on index
+            if (i >= 8) { // 9th star onwards (index 8)
+                colorClass = 'red';
+            } else if (i >= 4) { // 5th star onwards (index 4)
+                colorClass = 'orange';
+            }
+
+            const star = document.createElement('span');
+            const activityClass = i < current ? 'active' : 'inactive';
+            star.className = `star ${activityClass} ${colorClass}`;
+            star.textContent = '★';
+            container.appendChild(star);
+        }
+    };
+
     const updateUI = () => {
         ['player', 'opponent'].forEach(playerKey => {
             dom[playerKey].hp.textContent = state[playerKey].hp;
-            dom[playerKey].costDisplay.textContent = `${state[playerKey].cost}/${state[playerKey].maxCost}`;
-            dom[playerKey].charge.textContent = state[playerKey].charge;
+            renderStars(dom[playerKey].costStars, state[playerKey].cost, state[playerKey].maxCost, false);
+            renderStars(dom[playerKey].chargeStars, state[playerKey].charge, state[playerKey].charge, true);
             dom[playerKey].ultimateBtn.classList.toggle('used', state[playerKey].ultimateUsed);
             dom[playerKey].zeroCostFlag.classList.toggle('used', state[playerKey].zeroCostUsed);
         });
@@ -94,7 +115,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentPlayerKey = state.isPlayerTurn ? 'player' : 'opponent';
         const currentPlayerName = state.isPlayerTurn ? '先攻' : '後攻';
 
-        state[currentPlayerKey].maxCost++;
+        if (state[currentPlayerKey].maxCost < 10) {
+            state[currentPlayerKey].maxCost++;
+        }
         state[currentPlayerKey].cost = state[currentPlayerKey].maxCost;
 
         log(`${currentPlayerName}のターンです。`);
@@ -119,16 +142,36 @@ document.addEventListener("DOMContentLoaded", () => {
         ['player', 'opponent'].forEach(playerKey => {
             const name = playerKey === 'player' ? '先攻' : '後攻';
             
-            // Resource buttons
-            document.getElementById(`${playerKey}-hp-incr`).addEventListener('click', () => { state[playerKey].hp++; updateUI(); });
-            document.getElementById(`${playerKey}-hp-decr`).addEventListener('click', () => { state[playerKey].hp--; updateUI(); });
-            document.getElementById(`${playerKey}-cost-incr`).addEventListener('click', () => { state[playerKey].cost++; updateUI(); });
-            document.getElementById(`${playerKey}-cost-decr`).addEventListener('click', () => { if(state[playerKey].cost > 0) state[playerKey].cost--; updateUI(); });
-            document.getElementById(`${playerKey}-charge-incr`).addEventListener('click', () => { state[playerKey].charge++; updateUI(); });
-            document.getElementById(`${playerKey}-charge-decr`).addEventListener('click', () => { if(state[playerKey].charge > 0) state[playerKey].charge--; updateUI(); });
-            
-            // Ultimate Button
-            dom[playerKey].ultimateBtn.addEventListener('click', () => {
+            // --- Resource Item Click ---
+            const resourceItems = dom[playerKey].panel.querySelectorAll('.resource-item');
+            resourceItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const rect = item.getBoundingClientRect();
+                    const isTopHalf = e.clientY < rect.top + rect.height / 2;
+                    const controlId = item.querySelector('[id]').id;
+
+                    if (controlId.includes('hp')) {
+                        if (isTopHalf) state[playerKey].hp++;
+                        else state[playerKey].hp--;
+                    } else if (controlId.includes('cost')) {
+                        if (isTopHalf) {
+                            if (state[playerKey].cost < state[playerKey].maxCost) state[playerKey].cost++;
+                        } else {
+                            if (state[playerKey].cost > 0) state[playerKey].cost--;
+                        }
+                    } else if (controlId.includes('charge')) {
+                        if (isTopHalf) state[playerKey].charge++;
+                        else {
+                            if (state[playerKey].charge > 0) state[playerKey].charge--;
+                        }
+                    }
+                    updateUI();
+                });
+            });
+
+            // --- Button Clicks ---
+            dom[playerKey].ultimateBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent resource-item click
                 if (!state[playerKey].ultimateUsed) {
                     state[playerKey].ultimateUsed = true;
                     showNotification("奥義発動！");
@@ -143,8 +186,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-            // Skill Button
-            dom[playerKey].skillBtn.addEventListener('click', () => {
+            dom[playerKey].skillBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 if (state[playerKey].charge > 0) {
                     showNotification("リーダースキル発動！");
                     log(`${name}がリーダースキルを使用 (チャージ: ${state[playerKey].charge} → 0)`);
@@ -155,8 +198,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-            // Zero Cost Flag
-            dom[playerKey].zeroCostFlag.addEventListener('click', () => {
+            dom[playerKey].zeroCostFlag.addEventListener('click', (e) => {
+                e.stopPropagation();
                 state[playerKey].zeroCostUsed = !state[playerKey].zeroCostUsed;
                 log(`${name}の0コスト使用フラグが${state[playerKey].zeroCostUsed ? 'ON' : 'OFF'}になりました。`);
                 updateUI();

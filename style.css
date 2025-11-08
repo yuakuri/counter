@@ -2,12 +2,14 @@
     --font-family-base: 'Noto Sans JP', sans-serif;
     --primary-color: #007bff;
     --secondary-color: #6c757d;
-    --warning-color: #ffc107;
+    --warning-color: #ffc107; /* Yellow for cost 1-4 */
+    --orange-color: #fd7e14;   /* Orange for cost 5-8 */
+    --red-color: #dc3545;      /* Red for cost 9+ */
     --ultimate-color: #8a2be2;
     --success-color: #28a745;
-    --background-color: #f0f2f5;
+    --background-color: #f8f9fa;
     --surface-color: #ffffff;
-    --border-color: #e9ecef;
+    --border-color: #dee2e6;
     --text-color: #212529;
     --text-color-muted: #adb5bd;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
@@ -16,7 +18,7 @@
 html, body {
     height: 100%;
     margin: 0;
-    padding: 0;
+    padding: 0; /* Remove body padding */
     font-family: var(--font-family-base);
     background-color: var(--background-color);
     color: var(--text-color);
@@ -29,7 +31,7 @@ html, body {
 .main-container {
     flex-grow: 1;
     display: flex;
-    padding: 4px 4px 0 4px;
+    padding: 4px 0; /* Remove side padding */
     gap: 4px;
     min-height: 0;
 }
@@ -40,12 +42,14 @@ html, body {
     display: flex;
     flex-direction: column;
     background-color: var(--surface-color);
-    border-radius: 8px;
+    border-radius: 0;
     box-shadow: var(--shadow);
-    padding: 8px;
+    padding: 8px 5px;
     gap: 8px;
     transition: all 0.3s ease;
     border: 2px solid transparent;
+    border-left: none;
+    border-right: none;
     min-width: 0;
 }
 
@@ -77,34 +81,92 @@ html, body {
 .resource-item {
     background-color: #f8f9fa;
     border-radius: 6px;
-    padding: 2px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: grid; /* Changed to grid */
+    grid-template-rows: 1fr auto auto 1fr; /* Top empty, label, value, bottom empty */
+    justify-items: center;
     align-items: center;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    padding: 0; /* Remove padding, let grid handle spacing */
 }
+.resource-item::before, .resource-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 12.5%;
+    background: rgba(0,0,0,0.03);
+    pointer-events: none;
+}
+.resource-item::before { top: 0; }
+.resource-item::after { bottom: 0; }
+
 
 .resource-item label {
-    font-size: clamp(0.5rem, 1.8vmin, 0.7rem);
-    color: var(--text-color-muted);
-    font-weight: 400;
+    font-size: clamp(0.8rem, 2.5vmin, 1rem);
+    color: var(--primary-color);
+    font-weight: 700;
+    grid-row: 2; /* Place label in the second row */
+    z-index: 2;
+    background: #f8f9fa;
+    padding: 0 5px;
+    border-radius: 4px;
 }
 
 .counter-control {
     display: flex;
     align-items: center;
-    font-size: clamp(1rem, 4.5vmin, 1.5rem);
+    font-size: clamp(1.4rem, 6vmin, 2rem);
     font-weight: 700;
+    width: 100%;
+    justify-content: center;
+    flex-grow: 1;
+    grid-row: 3; /* Place value in the third row */
+    z-index: 2;
 }
 
 .counter-control.vertical {
     flex-direction: column;
     gap: 0;
+    justify-content: center;
 }
 
 .counter-control span {
     text-align: center;
-    white-space: nowrap; /* Prevent cost from wrapping */
+}
+
+/* --- Cost & Charge Stars --- */
+.cost-stars-container, .charge-stars-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    gap: 0 2px;
+    line-height: 1;
+    padding: 0 5px;
+    width: calc(5 * clamp(1rem, 4vmin, 1.4rem) + 4 * 2px); /* 5 stars + 4 gaps */
+    max-width: 100%; /* Ensure it doesn't overflow */
+}
+.star {
+    font-size: clamp(1rem, 4vmin, 1.4rem);
+    transition: color 0.2s ease;
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: #000;
+    paint-order: stroke fill;
+}
+.star.active {
+    color: yellow; /* Changed to yellow */
+}
+.star.inactive {
+    color: var(--border-color);
+    -webkit-text-stroke-color: #aaa;
+}
+.star.active.orange {
+    color: orange; /* Changed to orange */
+}
+.star.active.red {
+    color: red; /* Changed to red */
 }
 
 /* --- Flags & Skill Buttons --- */
@@ -160,19 +222,28 @@ html, body {
 }
 .button-warning { background-color: var(--warning-color); color: var(--text-color); }
 
-.button-small {
+.button-small { /* Arrow indicators */
     background-color: transparent;
     border: none;
     box-shadow: none;
     color: var(--text-color);
     font-size: clamp(0.8rem, 3vmin, 1rem);
-    padding: 2px;
-    width: auto;
+    padding: 0;
+    width: 100%;
     height: auto;
-    transition: transform 0.2s ease;
+    position: absolute;
+    left: 0;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 1;
 }
-.button-small:hover { transform: scale(1.2); }
-.button-small:active { transform: scale(1); }
+.button-small:first-child { /* Up arrow */
+    top: 2px;
+}
+.button-small:last-child { /* Down arrow */
+    bottom: 2px;
+}
+
 
 .button-ultimate, .button-skill {
     color: white;
@@ -181,13 +252,17 @@ html, body {
     cursor: pointer;
     font-weight: 700;
     transition: all 0.2s ease;
-    padding: 4px;
+    padding: 8px 4px;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .button-ultimate:hover, .button-skill:hover { transform: translateY(-1px); }
 .button-ultimate:active, .button-skill:active { transform: translateY(0); }
 
-.button-ultimate { background-color: var(--ultimate-color); font-size: clamp(0.8rem, 2.8vmin, 1rem); }
-.button-skill { background-color: var(--primary-color); font-size: clamp(0.6rem, 2vmin, 0.8rem); line-height: 1.1; }
+.button-ultimate { background-color: var(--ultimate-color); font-size: clamp(0.9rem, 3vmin, 1.1rem); }
+.button-skill { background-color: var(--primary-color); font-size: clamp(0.7rem, 2.2vmin, 0.8rem); line-height: 1.1; }
 .button-ultimate.used { background-color: var(--secondary-color); text-decoration: line-through; cursor: pointer; }
 
 /* --- Footer --- */
@@ -198,7 +273,7 @@ html, body {
     background-color: var(--surface-color);
     box-shadow: 0 -2px 8px rgba(0,0,0,0.07);
 }
-.footer-controls .button { flex: 1; }
+.footer-controls .button { flex: 1; padding: 10px 5px; }
 
 /* --- Modals & Notifications --- */
 .log-modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
